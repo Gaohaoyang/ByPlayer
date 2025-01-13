@@ -5,6 +5,9 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Build
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
@@ -12,10 +15,14 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.media3.common.Player
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
+import androidx.media3.ui.PlayerNotificationManager
 import com.haoyang.byplayer.ByPlayerApplication
 import com.haoyang.byplayer.MainActivity
 import com.haoyang.byplayer.R
-import com.haoyang.byplayer.model.MusicFile
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MediaPlaybackService : MediaSessionService() {
     private var mediaSession: MediaSession? = null
@@ -23,6 +30,10 @@ class MediaPlaybackService : MediaSessionService() {
     private var currentLyric: String = ""
     private val player: Player
         get() = ByPlayerApplication.instance.player
+
+    private lateinit var playerNotificationManager: PlayerNotificationManager
+    private val serviceScope = CoroutineScope(Dispatchers.Main)
+    private val notificationId = 1
 
     override fun onCreate() {
         super.onCreate()
@@ -36,6 +47,89 @@ class MediaPlaybackService : MediaSessionService() {
 
         setupPlayerListener()
         createNotificationChannel()
+        setupNotificationManager()
+    }
+
+    private fun setupNotificationManager() {
+        playerNotificationManager = PlayerNotificationManager.Builder(this, notificationId, getString(R.string.playback_channel_id))
+            .setMediaDescriptionAdapter(object : PlayerNotificationManager.MediaDescriptionAdapter {
+                override fun getCurrentContentTitle(player: Player): CharSequence {
+                    return player.mediaMetadata.title?.toString() ?: "Unknown Title"
+                }
+
+                override fun createCurrentContentIntent(player: Player): PendingIntent? {
+                    val intent = Intent(this@MediaPlaybackService, MainActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    }
+                    return PendingIntent.getActivity(
+                        this@MediaPlaybackService, 0, intent,
+                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                    )
+                }
+
+                override fun getCurrentContentText(player: Player): CharSequence {
+                    return "${player.mediaMetadata.artist ?: "Unknown Artist"} - ${player.mediaMetadata.albumTitle ?: ""}"
+                }
+
+                override fun getCurrentLargeIcon(
+                    player: Player,
+                    callback: PlayerNotificationManager.BitmapCallback
+                ): Bitmap? {
+                    player.mediaMetadata.artworkUri?.let { uri ->
+                        loadAlbumArt(uri) { bitmap ->
+                            callback.onBitmap(bitmap)
+                        }
+                    }
+                    return null
+                }
+            })
+            .setChannelNameResourceId(R.string.playback_channel_name)
+            .setChannelDescriptionResourceId(R.string.playback_channel_description)
+            .setSmallIconResourceId(R.drawable.ic_music_note)
+            .setNotificationListener(object : PlayerNotificationManager.NotificationListener {
+                override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
+                    stopForeground(true)
+                    stopSelf()
+                }
+
+                override fun onNotificationPosted(
+                    notificationId: Int,
+                    notification: Notification,
+                    ongoing: Boolean
+                ) {
+                    if (ongoing) {
+                        startForeground(notificationId, notification)
+                    }
+                }
+            })
+            .build()
+
+        playerNotificationManager.apply {
+            setPlayer(player)
+            mediaSession?.let { session ->
+                setMediaSessionToken(session.sessionCompatToken)
+            }
+            setUseNextAction(true)
+            setUsePreviousAction(true)
+            setUsePlayPauseActions(true)
+            setUseStopAction(false)
+        }
+    }
+
+    private fun loadAlbumArt(uri: Uri, callback: (Bitmap) -> Unit) {
+        serviceScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    contentResolver.openInputStream(uri)?.use { inputStream ->
+                        BitmapFactory.decodeStream(inputStream)?.let { bitmap ->
+                            callback(bitmap)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     private fun setupPlayerListener() {
@@ -92,6 +186,7 @@ class MediaPlaybackService : MediaSessionService() {
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
 
     override fun onDestroy() {
+        playerNotificationManager.setPlayer(null)
         mediaSession?.run {
             release()
             mediaSession = null
