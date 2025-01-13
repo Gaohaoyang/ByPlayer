@@ -1,64 +1,66 @@
-# ByPlayer - Android 音乐播放器
+# ByPlayer - Android Music Player
 
-ByPlayer 是一个现代化的 Android 音乐播放器应用，使用 Kotlin 和 Jetpack Compose 开发。它提供了流畅的用户界面和丰富的功能，让您享受本地音乐播放的乐趣。
+ByPlayer is a modern Android music player application developed with Kotlin and Jetpack Compose. It provides a smooth user interface and rich features for enjoying local music playback.
 
-## 主要功能
+[中文文档](READMEZH.md)
 
-- 🎵 本地音乐扫描和播放
-  - 支持 MP3、M4A 等常见音频格式
-  - 自动扫描设备中的音乐文件
-  - 显示歌曲标题、艺术家、专辑信息
+## Key Features
 
-- 📝 LRC 歌词支持
-  - 自动加载和显示 LRC 格式歌词
-  - 实时同步歌词显示
-  - 支持歌词界面手势控制
+- 🎵 Local Music Scanning and Playback
+  - Support for common audio formats (MP3, M4A, etc.)
+  - Automatic scanning of music files on device
+  - Display of song title, artist, and album information
 
-- 🎮 丰富的播放控制
-  - 播放/暂停、上一曲/下一曲
-  - 进度条拖动控制
-  - 随机播放模式
-  - 单曲/列表循环模式
+- 📝 LRC Lyrics Support
+  - Automatic loading and display of LRC format lyrics
+  - Real-time synchronized lyrics display
+  - Gesture control for lyrics interface
 
-- 📱 通知栏控制
-  - 媒体通知栏显示当前播放信息
-  - 通知栏快捷控制播放
-  - 后台播放支持
+- 🎮 Rich Playback Controls
+  - Play/Pause, Previous/Next track
+  - Progress bar with seek control
+  - Shuffle mode
+  - Single/List repeat modes
 
-- 🚗 车载系统支持
-  - 支持蓝牙连接显示歌词
-  - 通过 AVRCP 协议与车载系统集成
-  - 支持方向盘控制
+- 📱 Notification Controls
+  - Media notification with current playback information
+  - Quick playback controls in notification
+  - Background playback support
 
-## 技术特点
+- 🚗 Car System Integration
+  - Bluetooth connection with lyrics display
+  - Integration with car systems via AVRCP protocol
+  - Steering wheel control support
 
-- 使用 Kotlin 语言开发
-- 采用 Jetpack Compose 构建现代化 UI
-- 使用 Media3 ExoPlayer 实现音频播放
-- 支持 Android 12+ 的新权限系统
-- 遵循 Material Design 3 设计规范
+## Technical Features
 
-## 系统要求
+- Developed in Kotlin
+- Modern UI built with Jetpack Compose
+- Audio playback powered by Media3 ExoPlayer
+- Support for Android 12+ permission system
+- Following Material Design 3 guidelines
 
-- Android 6.0 (API 23) 或更高版本
-- 需要存储权限以访问本地音乐文件
-- 需要通知权限以显示媒体通知
-- 需要蓝牙权限以支持车载功能
+## System Requirements
 
-## 开发环境设置
+- Android 6.0 (API 23) or higher
+- Storage permission for accessing local music files
+- Notification permission for media notifications
+- Bluetooth permission for car system integration
 
-1. 克隆项目：
+## Development Setup
+
+1. Clone the repository:
 ```bash
 git clone https://github.com/yourusername/ByPlayer.git
 ```
 
-2. 使用 Android Studio Hedgehog 或更高版本打开项目
+2. Open the project in Android Studio Hedgehog or later
 
-3. 同步 Gradle 依赖
+3. Sync Gradle dependencies
 
-4. 运行应用
+4. Run the application
 
-## 使用的主要依赖
+## Main Dependencies
 
 - androidx.compose:compose-bom:2023.10.01
 - androidx.media3:media3-exoplayer:1.2.0
@@ -66,14 +68,14 @@ git clone https://github.com/yourusername/ByPlayer.git
 - androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0
 - com.google.accompanist:accompanist-permissions:0.32.0
 
-## 许可证
+## License
 
-本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## 贡献
+## Contributing
 
-欢迎提交 Issue 和 Pull Request！
+Issues and Pull Requests are welcome!
 
-## 致谢
+## Acknowledgments
 
-感谢所有为本项目提供帮助和建议的贡献者。
+Thanks to all contributors who have helped with this project.
