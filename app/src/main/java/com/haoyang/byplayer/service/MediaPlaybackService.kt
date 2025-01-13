@@ -93,13 +93,21 @@ class MediaPlaybackService : MediaSessionService() {
 
     override fun onDestroy() {
         mediaSession?.run {
-            player.release()
             release()
             mediaSession = null
         }
         mediaSessionCompat?.release()
         mediaSessionCompat = null
+        ByPlayerApplication.instance.releasePlayer()
         super.onDestroy()
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        // 如果不是在播放状态，则停止服务
+        if (!player.isPlaying) {
+            stopSelf()
+        }
     }
 
     private fun createNotificationChannel() {

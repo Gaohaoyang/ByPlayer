@@ -34,6 +34,10 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 启动媒体服务
+        startService(Intent(this, MediaPlaybackService::class.java))
+
         setContent {
             MaterialTheme {
                 val permissions = buildList {
@@ -60,8 +64,15 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         // 重新连接到媒体服务
-        val intent = Intent(this, MediaPlaybackService::class.java)
-        startService(intent)
+        startService(Intent(this, MediaPlaybackService::class.java))
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // 如果应用被销毁且没有在播放，则停止服务
+        if (!viewModel.player.isPlaying) {
+            stopService(Intent(this, MediaPlaybackService::class.java))
+        }
     }
 
     override fun onBackPressed() {
