@@ -211,6 +211,19 @@ fun PlayerControls(
         tonalElevation = 8.dp
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
+            // 歌词显示（移到最上方）
+            if (!showLyrics && currentLyric.isNotEmpty()) {
+                Text(
+                    text = currentLyric,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier
+                        .padding(vertical = 4.dp)
+                        .fillMaxWidth()
+                        .clickable(onClick = onToggleLyrics),
+                    textAlign = TextAlign.Center
+                )
+            }
+
             // 歌曲信息
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -270,19 +283,6 @@ fun PlayerControls(
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
-            }
-
-            // 歌词显示（简单版本）
-            if (!showLyrics && currentLyric.isNotEmpty()) {
-                Text(
-                    text = currentLyric,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier
-                        .padding(vertical = 8.dp)
-                        .fillMaxWidth()
-                        .clickable(onClick = onToggleLyrics),
-                    textAlign = TextAlign.Center
-                )
             }
 
             // 播放控制按钮
