@@ -167,20 +167,37 @@ class MediaPlaybackService : MediaSessionService() {
 
     private fun updateMetadata() {
         val metadata = player.mediaMetadata
+        val title = metadata.title?.toString() ?: ""
+        val artist = metadata.artist?.toString() ?: ""
+        val album = metadata.albumTitle?.toString() ?: ""
+
+        // 将歌词直接作为标题显示
+        val displayTitle = if (currentLyric.isNotEmpty()) {
+            currentLyric
+        } else {
+            title
+        }
+
+        // 将歌曲信息放在艺术家字段中
+        val displayArtist = "$title - $artist"
 
         val metadataBuilder = MediaMetadataCompat.Builder()
-            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, metadata.title?.toString())
-            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, metadata.artist?.toString())
-            .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, metadata.albumTitle?.toString())
-            // 将当前歌词作为显示文本发送给车机
+            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, displayTitle)  // 显示歌词
+            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, displayArtist)  // 显示歌曲信息
+            .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, album)
+            // 在其他字段中也保留完整信息，以增加兼容性
+            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, displayTitle)
+            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, displayArtist)
             .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, currentLyric)
 
         mediaSessionCompat?.setMetadata(metadataBuilder.build())
     }
 
     fun updateCurrentLyric(lyric: String) {
-        currentLyric = lyric
-        updateMetadata()
+        if (currentLyric != lyric) {  // 只在歌词变化时更新
+            currentLyric = lyric
+            updateMetadata()  // 立即更新元数据
+        }
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
