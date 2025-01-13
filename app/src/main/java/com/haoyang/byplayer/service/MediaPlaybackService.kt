@@ -166,37 +166,25 @@ class MediaPlaybackService : MediaSessionService() {
     }
 
     private fun updateMetadata() {
-        val metadata = player.mediaMetadata
-        val title = metadata.title?.toString() ?: ""
-        val artist = metadata.artist?.toString() ?: ""
-        val album = metadata.albumTitle?.toString() ?: ""
+        val displayTitle = currentLyric.takeIf { it.isNotBlank() } ?: player.mediaMetadata.title.toString()
+        val songTitle = player.mediaMetadata.title.toString()
+        val artist = player.mediaMetadata.artist?.toString()?.takeIf { it != "<unknown>" } ?: ""
+        val displayArtist = if (artist.isNotBlank()) "$songTitle - $artist" else songTitle
 
         android.util.Log.d("ByPlayer", "更新媒体元数据")
         android.util.Log.d("ByPlayer", "当前歌词: $currentLyric")
-
-        // 将歌词直接作为标题显示
-        val displayTitle = if (currentLyric.isNotEmpty()) {
-            currentLyric
-        } else {
-            title
-        }
-
-        // 将歌曲信息放在艺术家字段中
-        val displayArtist = "$title - $artist"
-
-        val metadataBuilder = MediaMetadataCompat.Builder()
-            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, displayTitle)  // 显示歌词
-            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, displayArtist)  // 显示歌曲信息
-            .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, album)
-            // 在其他字段中也保留完整信息，以增加兼容性
-            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, displayTitle)
-            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, displayArtist)
-            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, currentLyric)
-
         android.util.Log.d("ByPlayer", "更新后的显示标题: $displayTitle")
         android.util.Log.d("ByPlayer", "更新后的显示艺术家: $displayArtist")
 
-        mediaSessionCompat?.setMetadata(metadataBuilder.build())
+        val metadata = MediaMetadataCompat.Builder()
+            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, displayTitle)
+            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, displayArtist)
+            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, displayTitle)
+            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, displayArtist)
+            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, currentLyric)
+            .build()
+
+        mediaSessionCompat?.setMetadata(metadata)
     }
 
     fun updateCurrentLyric(lyric: String) {
