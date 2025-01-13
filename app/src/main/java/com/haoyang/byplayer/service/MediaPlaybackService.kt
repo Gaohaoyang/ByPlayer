@@ -171,6 +171,9 @@ class MediaPlaybackService : MediaSessionService() {
         val artist = metadata.artist?.toString() ?: ""
         val album = metadata.albumTitle?.toString() ?: ""
 
+        android.util.Log.d("ByPlayer", "更新媒体元数据")
+        android.util.Log.d("ByPlayer", "当前歌词: $currentLyric")
+
         // 将歌词直接作为标题显示
         val displayTitle = if (currentLyric.isNotEmpty()) {
             currentLyric
@@ -190,13 +193,20 @@ class MediaPlaybackService : MediaSessionService() {
             .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, displayArtist)
             .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, currentLyric)
 
+        android.util.Log.d("ByPlayer", "更新后的显示标题: $displayTitle")
+        android.util.Log.d("ByPlayer", "更新后的显示艺术家: $displayArtist")
+
         mediaSessionCompat?.setMetadata(metadataBuilder.build())
     }
 
     fun updateCurrentLyric(lyric: String) {
+        android.util.Log.d("ByPlayer", "收到新歌词更新请求: $lyric")
         if (currentLyric != lyric) {  // 只在歌词变化时更新
+            android.util.Log.d("ByPlayer", "歌词已变化，从 '$currentLyric' 更新为 '$lyric'")
             currentLyric = lyric
             updateMetadata()  // 立即更新元数据
+        } else {
+            android.util.Log.d("ByPlayer", "歌词未变化，跳过更新")
         }
     }
 

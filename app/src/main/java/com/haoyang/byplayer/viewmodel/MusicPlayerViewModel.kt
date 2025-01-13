@@ -231,13 +231,17 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
         val position = player.currentPosition
         val currentLyric = lrcParser.findCurrentLyric(currentLyrics, position)
 
-        // 更新歌词到Service
-        val context = getApplication<Application>()
-        val serviceIntent = Intent(context, MediaPlaybackService::class.java).apply {
-            action = "UPDATE_LYRIC"
-            putExtra("lyric", currentLyric)
+        // 只有当歌词内容变化时才发送更新
+        if (playerState.value.currentLyric != currentLyric) {
+            android.util.Log.d("ByPlayer", "歌词内容变化，发送更新到Service")
+            // 更新歌词到Service
+            val context = getApplication<Application>()
+            val serviceIntent = Intent(context, MediaPlaybackService::class.java).apply {
+                action = "UPDATE_LYRIC"
+                putExtra("lyric", currentLyric)
+            }
+            context.startService(serviceIntent)
         }
-        context.startService(serviceIntent)
 
         updatePlayerState {
             it.copy(
