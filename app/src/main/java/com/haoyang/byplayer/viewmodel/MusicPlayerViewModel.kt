@@ -1,12 +1,14 @@
 package com.haoyang.byplayer.viewmodel
 
 import android.app.Application
+import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.haoyang.byplayer.ByPlayerApplication
 import com.haoyang.byplayer.model.MusicFile
+import com.haoyang.byplayer.service.MediaPlaybackService
 import com.haoyang.byplayer.utils.LrcParser
 import com.haoyang.byplayer.utils.LrcLine
 import com.haoyang.byplayer.utils.MusicScanner
@@ -177,6 +179,14 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
     private fun updateCurrentPosition() {
         val position = player.currentPosition
         val currentLyric = lrcParser.findCurrentLyric(currentLyrics, position)
+
+        // 更新歌词到Service
+        val context = getApplication<Application>()
+        val serviceIntent = Intent(context, MediaPlaybackService::class.java).apply {
+            action = "UPDATE_LYRIC"
+            putExtra("lyric", currentLyric)
+        }
+        context.startService(serviceIntent)
 
         updatePlayerState {
             it.copy(
