@@ -36,6 +36,9 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
     private val _playerState = MutableStateFlow(PlayerState())
     val playerState: StateFlow<PlayerState> = _playerState.asStateFlow()
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
     val currentLyrics: List<LrcLine>
         get() = _currentLyrics
     private var _currentLyrics: List<LrcLine> = emptyList()
@@ -84,6 +87,54 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
             val musicFiles = musicScanner.scanMusicFiles()
             originalPlaylist = musicFiles
             updatePlayerState { it.copy(playlist = musicFiles) }
+        }
+    }
+
+    fun refreshMusicFiles() {
+        viewModelScope.launch {
+            android.util.Log.d("ByPlayer", "开始刷新音乐文件列表")
+            _isRefreshing.value = true
+            try {
+                android.util.Log.d("ByPlayer", "正在扫描音乐文件...")
+                val musicFiles = musicScanner.scanMusicFiles()
+                android.util.Log.d("ByPlayer", "扫描完成，找到 ${musicFiles.size} 个音乐文件")
+                originalPlaylist = musicFiles
+
+                // 保持当前播放的歌曲在列表中的位置
+                val currentMusic = playerState.value.currentMusic
+                if (currentMusic != null) {
+                    val currentIndex = musicFiles.indexOfFirst { it.id == currentMusic.id }
+                    android.util.Log.d("ByPlayer", "当前播放的歌曲在新列表中的位置: $currentIndex")
+                    if (currentIndex != -1) {
+                        // 如果当前播放的歌曲仍然存在，更新媒体项
+                        val mediaItems = musicFiles.map {
+                            MediaItem.Builder()
+                                .setMediaId(it.uri.toString())
+                                .setUri(it.uri)
+                                .setMediaMetadata(
+                                    androidx.media3.common.MediaMetadata.Builder()
+                                        .setTitle(it.title)
+                                        .setArtist(it.artist)
+                                        .setAlbumTitle(it.album)
+                                        .setArtworkUri(it.albumArtUri)
+                                        .build()
+                                )
+                                .build()
+                        }
+                        android.util.Log.d("ByPlayer", "更新播放器媒体项")
+                        player.setMediaItems(mediaItems, currentIndex, player.currentPosition)
+                        player.prepare()
+                    }
+                }
+
+                updatePlayerState { it.copy(playlist = musicFiles) }
+                android.util.Log.d("ByPlayer", "播放列表更新完成")
+            } catch (e: Exception) {
+                android.util.Log.e("ByPlayer", "刷新音乐文件列表失败", e)
+            } finally {
+                _isRefreshing.value = false
+                android.util.Log.d("ByPlayer", "刷新状态重置为 false")
+            }
         }
     }
 

@@ -20,10 +20,15 @@ class MusicScanner(private val context: Context) {
             MediaStore.Audio.Media.ARTIST,
             MediaStore.Audio.Media.ALBUM,
             MediaStore.Audio.Media.DURATION,
-            MediaStore.Audio.Media.DATA
+            MediaStore.Audio.Media.DATA,
+            MediaStore.Audio.Media.MIME_TYPE  // 添加MIME_TYPE来查看文件类型
         )
 
+        // 使用原始的搜索条件
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
+
+        android.util.Log.d("ByPlayer", "开始扫描音乐文件，搜索条件: $selection")
+        android.util.Log.d("ByPlayer", "外部存储URI: $collection")
 
         context.contentResolver.query(
             collection,
@@ -32,12 +37,28 @@ class MusicScanner(private val context: Context) {
             null,
             null
         )?.use { cursor ->
+            val count = cursor.count
+            android.util.Log.d("ByPlayer", "查询到 $count 个音乐文件")
+
+            val pathColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+            val mimeTypeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.MIME_TYPE)
+
             while (cursor.moveToNext()) {
+                val path = cursor.getString(pathColumn)
+                val mimeType = cursor.getString(mimeTypeColumn)
+                android.util.Log.d("ByPlayer", "发现音乐文件: 路径=$path, 类型=$mimeType")
+
                 val musicFile = cursor.toMusicFile()
-                musicFile?.let { musicFiles.add(it) }
+                if (musicFile != null) {
+                    musicFiles.add(musicFile)
+                    android.util.Log.d("ByPlayer", "成功添加音乐文件: ${musicFile.title}")
+                } else {
+                    android.util.Log.e("ByPlayer", "无法解析音乐文件: $path")
+                }
             }
         }
 
+        android.util.Log.d("ByPlayer", "扫描完成，最终找到 ${musicFiles.size} 个有效音乐文件")
         return musicFiles
     }
 

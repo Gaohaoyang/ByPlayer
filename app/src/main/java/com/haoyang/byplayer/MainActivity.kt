@@ -27,11 +27,15 @@ import com.haoyang.byplayer.service.MediaPlaybackService
 import com.haoyang.byplayer.ui.LyricsScreen
 import com.haoyang.byplayer.viewmodel.MusicPlayerViewModel
 import android.content.Intent
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material.ExperimentalMaterialApi
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MusicPlayerViewModel by viewModels()
 
-    @OptIn(ExperimentalPermissionsApi::class)
+    @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -86,7 +90,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun PermissionRequest(permissionsState: com.google.accompanist.permissions.MultiplePermissionsState) {
     Column(
@@ -104,22 +108,48 @@ fun PermissionRequest(permissionsState: com.google.accompanist.permissions.Multi
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun MainScreen(viewModel: MusicPlayerViewModel) {
     val playerState by viewModel.playerState.collectAsStateWithLifecycle()
+    val refreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
         // 主要内容区域（歌曲列表或歌词）
         Box(modifier = Modifier.weight(1f)) {
             // 歌曲列表（始终存在，但在显示歌词时被覆盖）
-            LazyColumn(
+            Box(
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(playerState.playlist) { musicFile ->
-                    MusicListItem(
-                        musicFile = musicFile,
-                        isPlaying = playerState.currentMusic?.id == musicFile.id && playerState.isPlaying,
-                        onClick = { viewModel.playMusic(musicFile) }
+                val pullRefreshState = rememberPullRefreshState(
+                    refreshing = refreshing,
+                    onRefresh = {
+                        android.util.Log.d("ByPlayer", "下拉刷新被触发")
+                        viewModel.refreshMusicFiles()
+                    }
+                )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pullRefresh(pullRefreshState)
+                ) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(playerState.playlist) { musicFile ->
+                            MusicListItem(
+                                musicFile = musicFile,
+                                isPlaying = playerState.currentMusic?.id == musicFile.id && playerState.isPlaying,
+                                onClick = { viewModel.playMusic(musicFile) }
+                            )
+                        }
+                    }
+
+                    PullRefreshIndicator(
+                        refreshing = refreshing,
+                        state = pullRefreshState,
+                        modifier = Modifier.align(Alignment.TopCenter)
                     )
                 }
             }
