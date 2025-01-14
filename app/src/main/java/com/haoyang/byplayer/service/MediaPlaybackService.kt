@@ -166,20 +166,19 @@ class MediaPlaybackService : MediaSessionService() {
     }
 
     private fun updateMetadata() {
-        val displayTitle = currentLyric.takeIf { it.isNotBlank() } ?: player.mediaMetadata.title.toString()
         val songTitle = player.mediaMetadata.title.toString()
         val artist = player.mediaMetadata.artist?.toString()?.takeIf { it != "<unknown>" } ?: ""
         val displayArtist = if (artist.isNotBlank()) "$songTitle - $artist" else songTitle
 
         android.util.Log.d("ByPlayer", "更新媒体元数据")
         android.util.Log.d("ByPlayer", "当前歌词: $currentLyric")
-        android.util.Log.d("ByPlayer", "更新后的显示标题: $displayTitle")
+        android.util.Log.d("ByPlayer", "更新后的显示标题: $currentLyric")
         android.util.Log.d("ByPlayer", "更新后的显示艺术家: $displayArtist")
 
         val metadata = MediaMetadataCompat.Builder()
-            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, displayTitle)
+            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentLyric)
             .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, displayArtist)
-            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, displayTitle)
+            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, currentLyric)
             .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, displayArtist)
             .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, currentLyric)
             .build()
