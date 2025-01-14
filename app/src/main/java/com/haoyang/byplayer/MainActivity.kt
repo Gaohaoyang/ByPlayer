@@ -196,7 +196,17 @@ fun MusicListItem(
         },
         supportingContent = {
             Text(
-                text = "${musicFile.artist} - ${musicFile.album}",
+                text = buildString {
+                    if (musicFile.artist != "<unknown>") {
+                        append(musicFile.artist)
+                    }
+                    if (musicFile.album != "<unknown>") {
+                        if (isNotEmpty() && musicFile.artist != "<unknown>") {
+                            append(" - ")
+                        }
+                        append(musicFile.album)
+                    }
+                },
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -268,7 +278,17 @@ fun PlayerControls(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = "${musicFile.artist} - ${musicFile.album}",
+                        text = buildString {
+                            if (musicFile.artist != "<unknown>") {
+                                append(musicFile.artist)
+                            }
+                            if (musicFile.album != "<unknown>") {
+                                if (isNotEmpty()) {
+                                    append(" - ")
+                                }
+                                append(musicFile.album)
+                            }
+                        },
                         style = MaterialTheme.typography.bodyMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
