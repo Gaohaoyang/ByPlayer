@@ -195,19 +195,46 @@ class MediaPlaybackService : MediaSessionService() {
 
         // 添加专辑图片
         var hasArtwork = false
-        player.mediaMetadata.artworkUri?.let { uri ->
-            try {
-                contentResolver.openInputStream(uri)?.use { inputStream ->
-                    val bitmap = BitmapFactory.decodeStream(inputStream)
-                    if (bitmap != null) {
-                        metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, bitmap)
-                        metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap)
-                        hasArtwork = true
+        try {
+            // 首先尝试从音频文件中获取内嵌的专辑图片
+            player.currentMediaItem?.mediaId?.let { mediaId ->
+                val retriever = android.media.MediaMetadataRetriever()
+                try {
+                    retriever.setDataSource(this, Uri.parse(mediaId))
+                    retriever.embeddedPicture?.let { embeddedArt ->
+                        BitmapFactory.decodeByteArray(embeddedArt, 0, embeddedArt.size)?.let { bitmap ->
+                            metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, bitmap)
+                            metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap)
+                            hasArtwork = true
+                            android.util.Log.d("ByPlayer_Meta", "成功从音频文件中提取专辑图片")
+                        }
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("ByPlayer_Meta", "从音频文件提取专辑图片失败: ${e.message}")
+                } finally {
+                    retriever.release()
+                }
+            }
+
+            // 如果没有内嵌图片，尝试使用外部专辑图片
+            if (!hasArtwork) {
+                player.mediaMetadata.artworkUri?.let { uri ->
+                    try {
+                        contentResolver.openInputStream(uri)?.use { inputStream ->
+                            BitmapFactory.decodeStream(inputStream)?.let { bitmap ->
+                                metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, bitmap)
+                                metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap)
+                                hasArtwork = true
+                                android.util.Log.d("ByPlayer_Meta", "使用外部专辑图片")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e("ByPlayer_Meta", "加载外部专辑图片失败: ${e.message}")
                     }
                 }
-            } catch (e: Exception) {
-                android.util.Log.e("ByPlayer_Meta", "加载专辑图片失败: ${e.message}")
             }
+        } catch (e: Exception) {
+            android.util.Log.e("ByPlayer_Meta", "处理专辑图片失败: ${e.message}")
         }
         android.util.Log.d("ByPlayer_Meta", "是否包含专辑图片: $hasArtwork")
         android.util.Log.d("ByPlayer_Meta", "====================================")
