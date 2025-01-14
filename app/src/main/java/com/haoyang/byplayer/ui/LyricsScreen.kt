@@ -21,6 +21,12 @@ import androidx.compose.ui.unit.dp
 import com.haoyang.byplayer.utils.LrcLine
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
+import androidx.compose.ui.graphics.RenderEffect
+import androidx.compose.ui.graphics.asComposeRenderEffect
+import android.graphics.RenderEffect as AndroidRenderEffect
+import android.graphics.Shader.TileMode
+import android.os.Build
+import androidx.compose.ui.draw.blur
 
 @Composable
 fun LyricsScreen(
@@ -51,7 +57,7 @@ fun LyricsScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.95f))
+            .background(MaterialTheme.colorScheme.surface)
             .graphicsLayer {
                 translationX = offsetXAnimated
             }
@@ -71,18 +77,6 @@ fun LyricsScreen(
     ) {
         // 找到当前应该高亮的歌词索引
         val currentIndex = lyrics.indexOfLast { it.timeMs <= currentTimeMs }
-
-        // 自动滚动到当前歌词
-        LaunchedEffect(currentIndex) {
-            if (currentIndex >= 0) {
-                coroutineScope.launch {
-                    listState.animateScrollToItem(
-                        index = maxOf(0, currentIndex - 2),
-                        scrollOffset = -100
-                    )
-                }
-            }
-        }
 
         if (lyrics.isEmpty()) {
             Text(
@@ -115,6 +109,18 @@ fun LyricsScreen(
                         else
                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                         textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+
+        // 自动滚动到当前歌词
+        LaunchedEffect(currentIndex) {
+            if (currentIndex >= 0) {
+                coroutineScope.launch {
+                    listState.animateScrollToItem(
+                        index = maxOf(0, currentIndex - 2),
+                        scrollOffset = -100
                     )
                 }
             }
