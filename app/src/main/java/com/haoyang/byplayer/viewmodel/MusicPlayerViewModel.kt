@@ -24,7 +24,7 @@ data class PlayerState(
     val currentLyric: String = "",
     val playlist: List<MusicFile> = emptyList(),
     val isShuffleMode: Boolean = false,
-    val repeatMode: Int = Player.REPEAT_MODE_OFF,
+    val repeatMode: Int = Player.REPEAT_MODE_ALL,
     val showLyrics: Boolean = false
 )
 
@@ -45,6 +45,7 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
     private var originalPlaylist: List<MusicFile> = emptyList()
 
     init {
+        player.repeatMode = Player.REPEAT_MODE_ALL
         setupPlayerListener()
         loadMusicFiles()
         startPositionUpdateJob()

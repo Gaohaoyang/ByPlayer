@@ -172,12 +172,13 @@ class MediaPlaybackService : MediaSessionService() {
     private fun updateMetadata() {
         val songTitle = player.mediaMetadata.title.toString()
         val artist = player.mediaMetadata.artist?.toString()?.takeIf { it != "<unknown>" } ?: ""
-        val displayArtist = if (artist.isNotBlank()) artist else ""
+        val displayArtist = if (artist.isNotBlank()) artist else songTitle  // 如果艺术家为空，使用歌曲名
 
         android.util.Log.d("ByPlayer_Meta", "============ 媒体元数据更新 ============")
         android.util.Log.d("ByPlayer_Meta", "原始数据:")
         android.util.Log.d("ByPlayer_Meta", "歌名: $songTitle")
         android.util.Log.d("ByPlayer_Meta", "艺术家: $artist")
+        android.util.Log.d("ByPlayer_Meta", "显示艺术家: $displayArtist")
         android.util.Log.d("ByPlayer_Meta", "当前歌词: $currentLyric")
         android.util.Log.d("ByPlayer_Meta", "专辑图片URI: ${player.mediaMetadata.artworkUri}")
 
