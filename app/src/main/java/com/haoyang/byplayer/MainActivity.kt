@@ -31,6 +31,7 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.core.view.WindowCompat
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MusicPlayerViewModel by viewModels()
@@ -38,6 +39,9 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 设置沉浸式状态栏
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         // 启动媒体服务
         startService(Intent(this, MediaPlaybackService::class.java))
