@@ -27,6 +27,7 @@ import android.graphics.RenderEffect as AndroidRenderEffect
 import android.graphics.Shader.TileMode
 import android.os.Build
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.text.font.FontWeight
 
 @Composable
 fun LyricsScreen(
@@ -102,8 +103,10 @@ fun LyricsScreen(
                         text = line.text,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 16.dp, horizontal = 24.dp),
-                        style = MaterialTheme.typography.bodyLarge,
+                            .padding(vertical = if (isCurrentLine) 8.dp else 4.dp, horizontal = 24.dp),
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = if (isCurrentLine) FontWeight.Bold else FontWeight.Normal
+                        ),
                         color = if (isCurrentLine)
                             MaterialTheme.colorScheme.primary
                         else
