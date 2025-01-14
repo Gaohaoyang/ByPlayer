@@ -79,6 +79,13 @@ fun LyricsScreen(
         // 找到当前应该高亮的歌词索引
         val currentIndex = lyrics.indexOfLast { it.timeMs <= currentTimeMs }
 
+        // 当歌词列表改变时，滚动到顶部
+        LaunchedEffect(lyrics) {
+            if (lyrics.isNotEmpty()) {
+                listState.scrollToItem(0)
+            }
+        }
+
         if (lyrics.isEmpty()) {
             Text(
                 text = "暂无歌词",
