@@ -229,7 +229,10 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
 
     private fun updateCurrentPosition() {
         val position = player.currentPosition
-        val currentLyric = lrcParser.findCurrentLyric(currentLyrics, position)
+        val isBluetoothPlayback = player.deviceInfo?.run {
+            playbackType == androidx.media3.common.DeviceInfo.PLAYBACK_TYPE_REMOTE
+        } ?: false
+        val currentLyric = lrcParser.findCurrentLyric(currentLyrics, position, isBluetoothPlayback)
 
         // 只有当歌词内容变化时才发送更新
         if (playerState.value.currentLyric != currentLyric) {

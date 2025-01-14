@@ -35,10 +35,12 @@ class LrcParser {
         return LrcLine(timeMs, text.trim())
     }
 
-    fun findCurrentLyric(lyrics: List<LrcLine>, currentTimeMs: Long): String {
+    fun findCurrentLyric(lyrics: List<LrcLine>, currentTimeMs: Long, isBluetoothPlayback: Boolean = false): String {
         if (lyrics.isEmpty()) return ""
 
-        val index = lyrics.binarySearch { it.timeMs.compareTo(currentTimeMs) }
+        val adjustedTimeMs = if (isBluetoothPlayback) currentTimeMs + 500 else currentTimeMs
+
+        val index = lyrics.binarySearch { it.timeMs.compareTo(adjustedTimeMs) }
         val currentIndex = if (index < 0) (-index - 2) else index
 
         return if (currentIndex >= 0 && currentIndex < lyrics.size) {
