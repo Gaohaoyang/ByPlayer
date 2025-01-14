@@ -85,9 +85,15 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
 
     private fun loadMusicFiles() {
         viewModelScope.launch {
-            val musicFiles = musicScanner.scanMusicFiles()
-            originalPlaylist = musicFiles
-            updatePlayerState { it.copy(playlist = musicFiles) }
+            try {
+                android.util.Log.d("ByPlayer", "开始加载音乐文件")
+                val musicFiles = musicScanner.scanMusicFiles()
+                android.util.Log.d("ByPlayer", "加载完成，找到 ${musicFiles.size} 个音乐文件")
+                originalPlaylist = musicFiles
+                updatePlayerState { it.copy(playlist = musicFiles) }
+            } catch (e: Exception) {
+                android.util.Log.e("ByPlayer", "加载音乐文件失败", e)
+            }
         }
     }
 
@@ -97,8 +103,29 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
             _isRefreshing.value = true
             try {
                 android.util.Log.d("ByPlayer", "正在扫描音乐文件...")
+                // 添加延迟以确保媒体扫描有足够时间
+                kotlinx.coroutines.delay(500)
                 val musicFiles = musicScanner.scanMusicFiles()
                 android.util.Log.d("ByPlayer", "扫描完成，找到 ${musicFiles.size} 个音乐文件")
+
+                // 比较新旧列表
+                val oldIds = originalPlaylist.map { it.id }.toSet()
+                val newIds = musicFiles.map { it.id }.toSet()
+                val addedIds = newIds - oldIds
+                val removedIds = oldIds - newIds
+
+                android.util.Log.d("ByPlayer", "列表比较结果:")
+                android.util.Log.d("ByPlayer", "新增文件数: ${addedIds.size}")
+                android.util.Log.d("ByPlayer", "移除文件数: ${removedIds.size}")
+
+                // 打印新增的文件信息
+                if (addedIds.isNotEmpty()) {
+                    android.util.Log.d("ByPlayer", "新增的文件:")
+                    musicFiles.filter { it.id in addedIds }.forEach { file ->
+                        android.util.Log.d("ByPlayer", "- ${file.title} (${file.uri})")
+                    }
+                }
+
                 originalPlaylist = musicFiles
 
                 // 保持当前播放的歌曲在列表中的位置
@@ -108,16 +135,16 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
                     android.util.Log.d("ByPlayer", "当前播放的歌曲在新列表中的位置: $currentIndex")
                     if (currentIndex != -1) {
                         // 如果当前播放的歌曲仍然存在，更新媒体项
-                        val mediaItems = musicFiles.map {
+                        val mediaItems = musicFiles.map { musicFile ->
                             MediaItem.Builder()
-                                .setMediaId(it.uri.toString())
-                                .setUri(it.uri)
+                                .setMediaId(musicFile.uri.toString())
+                                .setUri(musicFile.uri)
                                 .setMediaMetadata(
                                     androidx.media3.common.MediaMetadata.Builder()
-                                        .setTitle(it.title)
-                                        .setArtist(it.artist)
-                                        .setAlbumTitle(it.album)
-                                        .setArtworkUri(it.albumArtUri)
+                                        .setTitle(musicFile.title)
+                                        .setArtist(musicFile.artist)
+                                        .setAlbumTitle(musicFile.album)
+                                        .setArtworkUri(musicFile.albumArtUri)
                                         .build()
                                 )
                                 .build()
@@ -125,6 +152,8 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
                         android.util.Log.d("ByPlayer", "更新播放器媒体项")
                         player.setMediaItems(mediaItems, currentIndex, player.currentPosition)
                         player.prepare()
+                    } else {
+                        android.util.Log.d("ByPlayer", "当前播放的歌曲已不在列表中")
                     }
                 }
 
