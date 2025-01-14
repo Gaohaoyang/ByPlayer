@@ -168,22 +168,51 @@ class MediaPlaybackService : MediaSessionService() {
     private fun updateMetadata() {
         val songTitle = player.mediaMetadata.title.toString()
         val artist = player.mediaMetadata.artist?.toString()?.takeIf { it != "<unknown>" } ?: ""
-        val displayArtist = if (artist.isNotBlank()) "$songTitle - $artist" else songTitle
+        val displayArtist = if (artist.isNotBlank()) artist else ""
 
-        android.util.Log.d("ByPlayer", "更新媒体元数据")
-        android.util.Log.d("ByPlayer", "当前歌词: $currentLyric")
-        android.util.Log.d("ByPlayer", "更新后的显示标题: $currentLyric")
-        android.util.Log.d("ByPlayer", "更新后的显示艺术家: $displayArtist")
+        android.util.Log.d("ByPlayer_Meta", "============ 媒体元数据更新 ============")
+        android.util.Log.d("ByPlayer_Meta", "原始数据:")
+        android.util.Log.d("ByPlayer_Meta", "歌名: $songTitle")
+        android.util.Log.d("ByPlayer_Meta", "艺术家: $artist")
+        android.util.Log.d("ByPlayer_Meta", "当前歌词: $currentLyric")
+        android.util.Log.d("ByPlayer_Meta", "专辑图片URI: ${player.mediaMetadata.artworkUri}")
 
-        val metadata = MediaMetadataCompat.Builder()
-            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentLyric)
+        val metadataBuilder = MediaMetadataCompat.Builder()
+            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, songTitle)
             .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, displayArtist)
-            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, currentLyric)
+            .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, currentLyric)
+            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, songTitle)
             .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, displayArtist)
             .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, currentLyric)
-            .build()
 
-        mediaSessionCompat?.setMetadata(metadata)
+        android.util.Log.d("ByPlayer_Meta", "设置的Metadata:")
+        android.util.Log.d("ByPlayer_Meta", "METADATA_KEY_TITLE: $songTitle")
+        android.util.Log.d("ByPlayer_Meta", "METADATA_KEY_ARTIST: $displayArtist")
+        android.util.Log.d("ByPlayer_Meta", "METADATA_KEY_ALBUM: $currentLyric")
+        android.util.Log.d("ByPlayer_Meta", "METADATA_KEY_DISPLAY_TITLE: $songTitle")
+        android.util.Log.d("ByPlayer_Meta", "METADATA_KEY_DISPLAY_SUBTITLE: $displayArtist")
+        android.util.Log.d("ByPlayer_Meta", "METADATA_KEY_DISPLAY_DESCRIPTION: $currentLyric")
+
+        // 添加专辑图片
+        var hasArtwork = false
+        player.mediaMetadata.artworkUri?.let { uri ->
+            try {
+                contentResolver.openInputStream(uri)?.use { inputStream ->
+                    val bitmap = BitmapFactory.decodeStream(inputStream)
+                    if (bitmap != null) {
+                        metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, bitmap)
+                        metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap)
+                        hasArtwork = true
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("ByPlayer_Meta", "加载专辑图片失败: ${e.message}")
+            }
+        }
+        android.util.Log.d("ByPlayer_Meta", "是否包含专辑图片: $hasArtwork")
+        android.util.Log.d("ByPlayer_Meta", "====================================")
+
+        mediaSessionCompat?.setMetadata(metadataBuilder.build())
     }
 
     fun updateCurrentLyric(lyric: String) {
