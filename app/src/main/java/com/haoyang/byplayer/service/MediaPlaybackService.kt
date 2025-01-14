@@ -158,11 +158,15 @@ class MediaPlaybackService : MediaSessionService() {
                 PlaybackStateCompat.ACTION_PLAY or
                 PlaybackStateCompat.ACTION_PAUSE or
                 PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
+                PlaybackStateCompat.ACTION_SET_REPEAT_MODE
             )
             .build()
 
         mediaSessionCompat?.setPlaybackState(playbackState)
+
+        // 设置播放器的循环模式
+        player.repeatMode = Player.REPEAT_MODE_ALL
     }
 
     private fun updateMetadata() {
