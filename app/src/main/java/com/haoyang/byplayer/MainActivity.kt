@@ -32,6 +32,7 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.view.WindowCompat
+import androidx.compose.foundation.layout.systemBarsPadding
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MusicPlayerViewModel by viewModels()
@@ -118,7 +119,11 @@ fun MainScreen(viewModel: MusicPlayerViewModel) {
     val playerState by viewModel.playerState.collectAsStateWithLifecycle()
     val refreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .systemBarsPadding()
+    ) {
         // 主要内容区域（歌曲列表或歌词）
         Box(modifier = Modifier.weight(1f)) {
             // 歌曲列表（始终存在，但在显示歌词时被覆盖）
