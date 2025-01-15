@@ -27,17 +27,18 @@ import com.haoyang.byplayer.service.MediaPlaybackService
 import com.haoyang.byplayer.ui.LyricsScreen
 import com.haoyang.byplayer.viewmodel.MusicPlayerViewModel
 import android.content.Intent
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.core.view.WindowCompat
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.core.view.WindowCompat
-import androidx.compose.foundation.layout.systemBarsPadding
 
+@OptIn(ExperimentalMaterialApi::class)
 class MainActivity : ComponentActivity() {
     private val viewModel: MusicPlayerViewModel by viewModels()
 
-    @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
+    @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -95,7 +96,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun PermissionRequest(permissionsState: com.google.accompanist.permissions.MultiplePermissionsState) {
     Column(
