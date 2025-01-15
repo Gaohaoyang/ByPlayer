@@ -34,7 +34,7 @@ class MusicScanner(private val context: Context) {
 
         // 使用更严格的搜索条件
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} > 0"
-        val sortOrder = "${MediaStore.Audio.Media.DATE_MODIFIED} DESC"
+        val sortOrder = "${MediaStore.Audio.Media.DATA} ASC"
 
         android.util.Log.d("ByPlayer", "开始扫描音乐文件")
         android.util.Log.d("ByPlayer", "搜索条件: $selection")

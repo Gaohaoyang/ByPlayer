@@ -227,22 +227,7 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
     fun toggleShuffleMode() {
         val newShuffleMode = !playerState.value.isShuffleMode
         player.shuffleModeEnabled = newShuffleMode
-
-        if (newShuffleMode) {
-            val currentMusic = playerState.value.currentMusic
-            val shuffledList = playerState.value.playlist.toMutableList().apply { shuffle() }
-            // 确保当前播放的歌曲在随机播放列表的第一位
-            currentMusic?.let { music ->
-                val index = shuffledList.indexOf(music)
-                if (index > 0) {
-                    shuffledList.removeAt(index)
-                    shuffledList.add(0, music)
-                }
-            }
-            updatePlayerState { it.copy(playlist = shuffledList, isShuffleMode = true) }
-        } else {
-            updatePlayerState { it.copy(playlist = originalPlaylist, isShuffleMode = false) }
-        }
+        updatePlayerState { it.copy(isShuffleMode = newShuffleMode) }
     }
 
     fun toggleRepeatMode() {
