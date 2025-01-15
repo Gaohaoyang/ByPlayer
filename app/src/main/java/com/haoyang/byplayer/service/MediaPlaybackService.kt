@@ -42,6 +42,35 @@ class MediaPlaybackService : MediaSessionService() {
         // 创建兼容版本的MediaSession用于AVRCP
         mediaSessionCompat = MediaSessionCompat(this, "ByPlayer").apply {
             setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
+            setCallback(object : MediaSessionCompat.Callback() {
+                override fun onPlay() {
+                    player.play()
+                }
+
+                override fun onPause() {
+                    player.pause()
+                }
+
+                override fun onSkipToNext() {
+                    player.seekToNext()
+                }
+
+                override fun onSkipToPrevious() {
+                    player.seekToPrevious()
+                }
+
+                override fun onSeekTo(pos: Long) {
+                    player.seekTo(pos)
+                }
+
+                override fun onSetRepeatMode(repeatMode: Int) {
+                    player.repeatMode = when (repeatMode) {
+                        PlaybackStateCompat.REPEAT_MODE_ONE -> Player.REPEAT_MODE_ONE
+                        PlaybackStateCompat.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ALL
+                        else -> Player.REPEAT_MODE_OFF
+                    }
+                }
+            })
             isActive = true
         }
 
@@ -157,16 +186,15 @@ class MediaPlaybackService : MediaSessionService() {
             .setActions(
                 PlaybackStateCompat.ACTION_PLAY or
                 PlaybackStateCompat.ACTION_PAUSE or
+                PlaybackStateCompat.ACTION_PLAY_PAUSE or
                 PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
                 PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
+                PlaybackStateCompat.ACTION_SEEK_TO or
                 PlaybackStateCompat.ACTION_SET_REPEAT_MODE
             )
             .build()
 
         mediaSessionCompat?.setPlaybackState(playbackState)
-
-        // 设置播放器的循环模式
-        player.repeatMode = Player.REPEAT_MODE_ALL
     }
 
     private fun updateMetadata() {
