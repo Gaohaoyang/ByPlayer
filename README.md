@@ -1,8 +1,10 @@
 # ByPlayer - Android Music Player
 
+Most of the code in this repository was written and developed by AI.
+
 ByPlayer is a modern Android music player application developed with Kotlin and Jetpack Compose. It provides a smooth user interface and rich features for enjoying local music playback.
 
-[中文文档](READMEZH.md)
+[中文文档](./READMEZH.md)
 
 ## Key Features
 

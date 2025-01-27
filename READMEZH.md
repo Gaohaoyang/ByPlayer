@@ -1,5 +1,7 @@
 # ByPlayer - Android 音乐播放器
 
+本仓库绝大部分代码是由 AI 编写开发。
+
 ByPlayer 是一个现代化的 Android 音乐播放器应用，使用 Kotlin 和 Jetpack Compose 开发。它提供了流畅的用户界面和丰富的功能，让您享受本地音乐播放的乐趣。
 
 [English Version](README.md)
